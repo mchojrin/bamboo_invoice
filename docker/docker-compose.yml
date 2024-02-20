@@ -4,6 +4,11 @@ services:
     image: 'mysql:8.2.0'
     environment:
       - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=bambooinvoice
+      - MYSQL_USER=bamboo
+      - MYSQL_PASSWORD=bamboo
+    volumes:
+      - '../app/bambooinvoice.sql:/docker-entrypoint-initdb.d/init.sql'
   webserver:
     build:
       context: '..'
