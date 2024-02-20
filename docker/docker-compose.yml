@@ -5,13 +5,18 @@ services:
     environment:
       - MYSQL_ROOT_PASSWORD=root
   webserver:
-    image: 'httpd:2.4.58'
+    build:
+      context: '..'
+      dockerfile: 'docker/apache/Dockerfile'
     ports:
       - '9271:80'
     volumes:
       - '../app:/var/www/html'
       - './apache/my-httpd.conf:/usr/local/apache2/conf/httpd.conf'
   php:
-    image: 'php:7.4.33-fpm'
+    build:
+      context: '..'
+      dockerfile: 'docker/php/Dockerfile'
     volumes:
       - '../app:/var/www/html'
+      - './php/www.conf:/usr/local/etc/php-fpm.d/www.conf'
