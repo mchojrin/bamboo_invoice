@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  db:
+    image: 'mysql:8.2.0'
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+  webserver:
+    image: 'httpd:2.4.58'
+  php:
+    image: 'php:7.4.33-fpm'
