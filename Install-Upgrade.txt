@@ -1,0 +1,233 @@
+﻿Changes made from 0.8.9 to 1.0.0
+
+- Upgrade to CodeIgniter Version 3.1.2
+- Upgrade to dompdf pdflib Version dompdf-0.7.0
+- Introduced Accounting currency in global settings
+- Introduced Currency conversion through openexchangerates.org (get a free api key from https://openexchangerates.org/signup/free) 1000 Requests per Month
+- Introduced currency_symbol and currency_type in client table as default value
+- Introduced currency_symbol and currency_type in invoices table
+	Accounting Currency Code ISO 4217 ie: USD CHF CAD
+- Introduced accounting_invoice_exchange_rate on invoices db-table to convert to globally defined accounting currency as per invoice date
+- Added accounting total to view, pdf and email
+- Introduce api_key in settings table to access openexchangerates.org
+- Optimized rendering to 3 code currency symbols such as USD, CHF and so on
+- days_payment_due value is taken from invoice not from global settings anymore
+- Work description visualization changed in invoice edit, view and summary
+- Ajax script adjusted to return work description as well
+- Reduced calls to settings_model
+- Code clean up. Still not perfect but getting there.
+
+If you feel the urge to contribute send me an email.
+
+*********************************************************************************
+How to new install
+Go to phpMyAdmin and run the bambooinvoice.sql script to import the latest version of the bambooinvoice database
+Copy the all the files to your webfolder e.g. /var/www/bambooinvoice
+
+Rename the file in folder application/config
+
+please DO NOT use your old files. Reconfigure the new files as decribed below.
+
+application\config\config.sample.php to application\config\config.php
+application\config\database.sample.php to application\config\database.php
+application\config\email.sample.php to application\config\email.php
+
+and configure the files with the appropriate settings for your runtime environment.
+
+Login to your installation using
+user:	admin@admin.com
+pwd:	password
+
+change the user and password to your own credentials and start configuring. If for some reason you cannot login. 
+Change the admin@admin.com in the #_settings table entry and #_clientcontacts entry to your own email address and use 
+the password reset functionality in bambooinvoice
+
+
+*********************************************************************************
+How to upgrade BambooInvoice to from 0.8.9 to 1.0.0
+
+First Backup MySQL and BambooInvoice files
+Delete all files of the BambooInvoice installation
+Copy new files into bambooinvoice folder
+
+***** Important do not copy back the old files but change the values in the new files *****
+Configure the variables in application\config\config.php
+$config['base_url']	= 'http://localhost/bambooinvoice/'; to your old value in the previous installation
+do the same for application\config\database.php
+$db['default']['hostname'] = 'localhost';
+$db['default']['username'] = 'root';
+$db['default']['password'] = '';
+$db['default']['database'] = 'bambooinvoice';
+$db['default']['dbdriver'] = 'mysqli';
+$db['default']['dbprefix'] = 'bamboo_';
+$db['default']['active_r'] = TRUE;
+$db['default']['pconnect'] = FALSE;
+$db['default']['db_debug'] = TRUE;
+$db['default']['cache_on'] = FALSE;
+$db['default']['cachedir'] = '';
+$db['default']['char_set'] = 'utf8';
+$db['default']['dbcollat'] = 'utf8_general_ci';
+same for application\config\email.php
+$config['protocol'] = 'smtp';
+$config['smtp_host'] = 'localhost';
+$config['smtp_user'] = '';
+$config['smtp_pass'] = '';
+$config['smtp_port'] = '25';
+same for application\config\config.php
+// setting 'currency_decimal' will use this character instead of a '.' to separate
+// the cents.  For example: $24.67 vs $24,67 vs $24_67... or whatever
+$config['currency_decimal'] = '.';
+// setting 'currency_thousands' will use this character instead of a ' to separate
+// the thousand.  For example: $2'400.00 or $2,400.00 or whatever
+$config['currency_thousands'] = '\'';
+
+
+This is an important part of the Upgrade before calling any Upgrade Script. Because CodeIgniter has changed quite substantially we need to call this script manually via phpMyAdmin the rest is done via update Script
+
+#### change the @ccy to your currency and only use the ISO codes https://www.iso.org/iso-4217-currency-codes.html
+Please use the database scripts to upgrade
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+SET @ccy = "USD";
+ALTER TABLE `#_invoices` ADD COLUMN `currency_type`  VARCHAR(20) DEFAULT '';
+ALTER TABLE `#_invoices` ADD COLUMN `currency_symbol` VARCHAR(9) DEFAULT '';
+ALTER TABLE `#_clients` ADD COLUMN `currency_type` VARCHAR(20) DEFAULT '';
+ALTER TABLE `#_clients` ADD COLUMN `currency_symbol` VARCHAR(9) DEFAULT '';
+ALTER TABLE `#_clients` ADD COLUMN `invoice_note_default` VARCHAR(255);
+ALTER TABLE `#_clients` ADD COLUMN `days_payment_due` SMALLINT;
+ALTER TABLE `#_settings` ADD COLUMN `currency_type_accounting` VARCHAR(20);
+ALTER TABLE `#_settings` ADD COLUMN `api_key` VARCHAR(200);
+ALTER TABLE `#_settings` ADD COLUMN `exchange_surplus_middle_exchange_rate` decimal(20,6) DEFAULT '0.000000'
+ALTER TABLE `#_sessions` MODIFY COLUMN `ip_address` VARCHAR(45);
+ALTER TABLE `#_sessions` DROP COLUMN `user_agent`;
+ALTER TABLE `#_sessions` MODIFY COLUMN `session_id` `id` VARCHAR(128) NOT NULL;
+ALTER TABLE `#_sessions` MODIFY COLUMN `user_data` `data` BLOB NULL DEFAULT NULL;
+ALTER TABLE `#_sessions` MODIFY COLUMN `last_activity` `timestamp` INT(10) UNSIGNED NULL DEFAULT '0';
+ALTER TABLE `#_invoices` ADD COLUMN `accounting_invoice_exchange_rate`  decimal(20,6) DEFAULT '0.000000';
+UPDATE `#_invoices` SET `accounting_invoice_exchange_rate` = 1 WHERE `accounting_invoice_exchange_rate` = 0 OR `accounting_invoice_exchange_rate` = NULL;
+UPDATE `#_invoices` SET `currency_type` = @ccy;
+UPDATE `#_settings` SET `currency_type_accounting` = @ccy, `currency_type` = @ccy;
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.0";
+This should take you to the Version 1.0.0
+
+***** Important because CodeIgniter has changed on how to encrypt passwords your original password does not work anymore ****
+Use the password reset functionality in bambooinvoice to set a new password
+
+*********************************************************************************
+Upgrade to version 1.0.1
+
+This upgrade includes update to CodeIgniter 3.1.7 and PHP 7 compatibility and dompdf 0.8.1 from https://github.com/dompdf/dompdf/
+
+Remove usage of $config[‘standardize_newlines’]
+The Input Library would optionally replace occurences of rn, r, n in input data with whatever the PHP_EOL value is on your system - if you’ve set $config['standardize_newlines'] to TRUE in your application/config/config.php.
+This functionality is now deprecated and scheduled for removal in CodeIgniter 3.2.+.
+
+Please use the database scripts to upgrade
+Run these scripts against your bamboo invoice database 
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.1";
+
+*********************************************************************************
+Upgrade to version 1.0.2
+changes:
+dompdf 0.8.2
+compatible with PHP 7.2 with OpenSSL enabled
+mcrypt was removed from PHP 7.2 and therefore OpenSSL needs to be used to encrypt the passwords. As a consequence all passwords need to be reset either through the application by resetting the password in bamboo invoice
+
+Database field password in clientcontacts had to be enlarged to 250
+
+If by all means your password fails use password reset functionality 
+or use the work around by Dave Miller
+
+    Change line 60 in application/libraries/Site_sentry.php from if ($pwd == $password) { to if (TRUE) {
+    Log in
+    Go to settings and set a new password.
+    Reverse the change in step 1.
+    System now recognizes my new password.
+
+
+Please use the database scripts to upgrade
+Run these scripts against your bamboo invoice database 
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+ALTER TABLE `#_clientcontacts` MODIFY COLUMN `password` VARCHAR(250);
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.2";
+
+*********************************************************************************
+Upgrade to version 1.0.3
+- Upgrade to CodeIgniter Version 3.1.9
+- Translations addition for Estonian language
+
+Please use the database scripts to upgrade
+Run these scripts against your bamboo invoice database 
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.3";
+
+*********************************************************************************
+Upgrade to version 1.0.4
+- Introduced a Display Zero Tax Setting to show and hide zero tax lines in Invoice
+
+Please use the database scripts to upgrade
+Run these scripts against your bamboo invoice database 
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+ALTER TABLE `#_settings` ADD COLUMN `display_zero_tax` CHAR DEFAULT 'n';
+UPDATE `#_settings` SET `display_zero_tax` = 'n';
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.4";
+
+*********************************************************************************
+Upgrade to version 1.0.5
+- Make zero sum invoices which are not paid editable.
+- New item in invoice show the right currency_symbol
+- Added new index - below if you want to run them manually
+- Adapted code to accomodate sql_mode=ONLY_FULL_GROUP_BY 
+    - Select distinct introduced to be compatible with mysql 
+
+Please use the database scripts to upgrade
+Run these scripts against your bamboo invoice database 
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+CREATE INDEX `client_id` ON `#_invoices`(`client_id`);
+CREATE INDEX `invoice_number` ON `#_invoices`(`invoice_number`);
+CREATE INDEX `client_id` ON `#_clientcontacts`(`client_id`);
+CREATE INDEX `invoice_id` ON `#_invoice_histories`(`invoice_id`);
+CREATE INDEX `clientcontacts_id` ON `#_invoice_histories`(`clientcontacts_id`);
+CREATE INDEX `invoice_id` ON `#_invoice_items`(`invoice_id`);
+CREATE INDEX `invoice_id` ON `#_invoice_payments`(`invoice_id`);
+CREATE INDEX `primary_contact_email` ON `#_settings`(`primary_contact_email`);
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.5";
+
+*********************************************************************************
+Upgrade to version 1.0.6
+- Fix quick create invoice with client name
+- Added more fixes to accomodate sql_mode=ONLY_FULL_GROUP_BY 
+- Updated to Codeigniter 3.1.11
+- Update to dompdf 0.8.5
+- Added CSRF please copy the CSRF lines in config.sample.php to your config.php when upgrading
+- Consolidated pdf printing into one function. Download and emailing invoices will use same pdf function
+- fixed sending emails with invoice
+- cleaned up pdf printing code using only one function
+
+Please use the database scripts to upgrade
+Run these scripts against your bamboo invoice database 
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+ALTER TABLE `#_settings` MODIFY COLUMN `exchange_surplus_middle_exchange_rate` decimal(20,6) DEFAULT '0.000000';
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.6";
+
+*********************************************************************************
+Upgrade to version 1.0.7
+- Changes in controller/Reports.php for PHP 7.4+ optimizing date and performance 
+- Update to dompdf 1.2.2
+- Error Fix with Exchange Rate during validation
+- diverese minor corrections for upwards compatibility of PHP 8
+
+Please use the database scripts to upgrade
+Run these scripts against your bamboo invoice database 
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.7";
+
+*********************************************************************************
+Upgrade to version 1.0.8
+
+
+Please use the database scripts to upgrade
+Run these scripts against your bamboo invoice database
+Upgrade to PHP 8.2 compatibility
+#_ change this to your database table prefix usually bamboo_ and run the scripts in your bamboo database
+UPDATE `#_settings` SET `bambooinvoice_version` = "1.0.8";
