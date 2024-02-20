@@ -10,3 +10,6 @@ RUN docker-php-ext-install mysqli xml
 
 RUN usermod -u 1000 www-data && \
     groupmod -g 1000 www-data
+
+RUN pecl install xdebug-3.1.6 && \
+    docker-php-ext-enable xdebug
