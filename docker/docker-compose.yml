@@ -28,3 +28,7 @@ services:
       - './php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'
     environment:
       - CI_ENV=development
+  pma:
+    image: 'phpmyadmin/phpmyadmin'
+    ports:
+      - '9999:80'
