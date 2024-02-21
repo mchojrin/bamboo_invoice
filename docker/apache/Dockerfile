@@ -1,7 +1,12 @@
-FROM httpd:2.4.58
+FROM httpd:2.4.58 as prod
 
 RUN apt update && \
     apt -y install libapache2-mod-fcgid
+
+COPY app /var/www/html
+COPY my-httpd.conf /usr/local/apache2/conf/httpd.conf
+
+FROM prod as dev
 
 RUN usermod -u 1000 www-data && \
     groupmod -g 1000 www-data
