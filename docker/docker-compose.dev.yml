@@ -4,12 +4,14 @@ services:
     volumes:
       - '../app/bambooinvoice.sql:/docker-entrypoint-initdb.d/init.sql'
   webserver:
+    image: 'bamboo_httpd_dev'
     build:
       target: 'dev'
     volumes:
       - '../app:/var/www/html'
       - './apache/my-httpd.conf:/usr/local/apache2/conf/httpd.conf'
   php:
+    image: 'bamboo_php_dev'
     build:
       target: 'dev'
     volumes:
