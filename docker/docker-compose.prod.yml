@@ -1,0 +1,11 @@
+version: '3.8'
+services:
+  webserver:
+    build:
+      target: 'prod'
+  php:
+    build:
+      target: 'prod'
+    environment:
+      - CI_ENV=production
+

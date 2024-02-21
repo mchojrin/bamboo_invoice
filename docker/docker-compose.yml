@@ -1,34 +1,22 @@
 version: '3.8'
 services:
   db:
-    image: 'mysql:8.2.0'
+    image: 'bamboo_mysql'
+    build:
+      context: '..'
+      dockerfile: 'docker/mysql/Dockerfile'
     environment:
       - MYSQL_ROOT_PASSWORD=root
       - MYSQL_DATABASE=bambooinvoice
       - MYSQL_USER=bamboo
       - MYSQL_PASSWORD=bamboo
-    volumes:
-      - '../app/bambooinvoice.sql:/docker-entrypoint-initdb.d/init.sql'
   webserver:
     build:
       context: '..'
       dockerfile: 'docker/apache/Dockerfile'
     ports:
       - '9271:80'
-    volumes:
-      - '../app:/var/www/html'
-      - './apache/my-httpd.conf:/usr/local/apache2/conf/httpd.conf'
   php:
     build:
       context: '..'
       dockerfile: 'docker/php/Dockerfile'
-    volumes:
-      - '../app:/var/www/html'
-      - './php/www.conf:/usr/local/etc/php-fpm.d/www.conf'
-      - './php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'
-    environment:
-      - CI_ENV=development
-  pma:
-    image: 'phpmyadmin/phpmyadmin'
-    ports:
-      - '9999:80'

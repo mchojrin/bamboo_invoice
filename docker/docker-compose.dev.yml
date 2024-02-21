@@ -1,0 +1,24 @@
+version: '3.8'
+services:
+  db:
+    volumes:
+      - '../app/bambooinvoice.sql:/docker-entrypoint-initdb.d/init.sql'
+  webserver:
+    build:
+      target: 'dev'
+    volumes:
+      - '../app:/var/www/html'
+      - './apache/my-httpd.conf:/usr/local/apache2/conf/httpd.conf'
+  php:
+    build:
+      target: 'dev'
+    volumes:
+      - '../app:/var/www/html'
+      - './php/www.conf:/usr/local/etc/php-fpm.d/www.conf'
+      - './php/xdebug.ini:/usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini'
+    environment:
+      - CI_ENV=development
+  pma:
+    image: 'phpmyadmin/phpmyadmin'
+    ports:
+      - '9999:80'
