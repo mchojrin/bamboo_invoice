@@ -1,11 +1,21 @@
 version: '3.8'
 services:
   webserver:
+    image: 'bamboo_httpd_prod'
     build:
       target: 'prod'
+    volumes:
+      - 'logo:/var/www/html/img/logo'
+      - 'invoices_temp:/var/www/html/invoices_temp'
   php:
+    image: 'bamboo_php_prod'
     build:
       target: 'prod'
     environment:
       - CI_ENV=production
-
+    volumes:
+      - 'logo:/var/www/html/img/logo'
+      - 'invoices_temp:/var/www/html/invoices_temp'
+volumes:
+  logo: ~
+  invoices_temp: ~

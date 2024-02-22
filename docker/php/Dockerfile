@@ -11,6 +11,8 @@ RUN docker-php-ext-install mysqli xml
 COPY app /var/www/html
 COPY docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
 
+RUN chown -R www-data:www-data /var/www/html/
+
 FROM prod as dev
 
 RUN usermod -u 1000 www-data && \

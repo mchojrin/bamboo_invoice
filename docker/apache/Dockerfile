@@ -6,6 +6,8 @@ RUN apt update && \
 COPY app /var/www/html
 COPY docker/apache/my-httpd.conf /usr/local/apache2/conf/httpd.conf
 
+RUN chown -R www-data:www-data /var/www/html/
+
 FROM prod as dev
 
 RUN usermod -u 1000 www-data && \
