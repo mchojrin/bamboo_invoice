@@ -16,8 +16,8 @@ services:
     build:
       context: '..'
       dockerfile: 'docker/apache/Dockerfile'
-    ports:
-      - '9271:80'
+    volumes:
+      - './ssl/:/usr/local/apache2/ssl/'
   php:
     build:
       context: '..'

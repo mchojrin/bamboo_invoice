@@ -9,7 +9,11 @@ services:
       target: 'dev'
     volumes:
       - '../app:/var/www/html'
-      - './apache/my-httpd.conf:/usr/local/apache2/conf/httpd.conf'
+      - './apache/httpd.conf:/usr/local/apache2/conf/httpd.conf'
+      - './apache/sites/:/usr/local/apache2/conf/sites/'
+    ports:
+      - '127.0.0.1:9271:80'
+      - '127.0.0.1:8443:443'
   php:
     image: 'bamboo_php_dev'
     build:
